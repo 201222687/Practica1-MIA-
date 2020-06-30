@@ -1,0 +1,337 @@
+﻿--PLANTEAMIENTO 1
+
+create table PROFESION(
+cod_prof serial primary key,
+nombre varchar(50) not null unique
+);
+
+create table PAIS(
+cod_pais serial primary key,
+nombre varchar(50) not null unique
+);
+
+create table PUESTO (
+cod_puesto serial primary key,
+nombre varchar (50) not null unique
+);
+
+create table DEPARTAMENTO (
+cod_depto serial primary key,
+nombre varchar(50) not null unique
+);
+
+create table MIEMBRO (
+cod_miembro serial primary key,
+nombre varchar (100) not null,
+apellido varchar (100) not null,
+edad integer not null,
+telefono integer null,
+residencia varchar (100) null,
+PAIS_cod_pais integer not null,
+PROFESION_cod_prof integer not null,
+CONSTRAINT MIEMBRO_PAIS_cod_pais FOREIGN KEY (PAIS_cod_pais) REFERENCES PAIS (cod_pais),
+CONSTRAINT MIEMBRO_PROFESION_cod_prof FOREIGN KEY (PROFESION_cod_prof) REFERENCES PROFESION (cod_prof)
+);
+
+create table PUESTO_MIEMBRO(
+MIEMBRO_cod_miembro integer not null,
+PUESTO_cod_puesto integer not null,
+DEPARTAMENTO_cod_depto integer not null,
+fecha_inicio date not null,
+fecha_fin date null,
+CONSTRAINT PUESTO_MIEMBRO_cod_miembro_cod_puesto_cod_depto primary key (MIEMBRO_cod_miembro,PUESTO_cod_puesto,DEPARTAMENTO_cod_depto),
+CONSTRAINT PUESTO_MIEMBRO_MIEMBRO_cod_miembro FOREIGN KEY (MIEMBRO_cod_miembro) REFERENCES MIEMBRO (cod_miembro),
+CONSTRAINT PUESTO_MIEMBRO_PUESTO_cod_puesto FOREIGN KEY (PUESTO_cod_puesto) REFERENCES PUESTO(cod_puesto),
+CONSTRAINT PUESTO_MIEMBRO_DEPARTAMENTO_cod_depto FOREIGN KEY (DEPARTAMENTO_cod_depto) REFERENCES DEPARTAMENTO(cod_depto)
+);
+
+create table TIPO_MEDALLA(
+cod_tipo serial primary key,
+medalla varchar(20) not null unique
+);
+
+create table MEDALLERO(
+PAIS_cod_pais integer not null,
+cantidad_medallas integer not null,
+TIPO_MEDALLA_cod_tipo integer not null,
+CONSTRAINT MEDALLERO_cod_pais_cod_tipo primary key (PAIS_cod_pais,TIPO_MEDALLA_cod_tipo),
+CONSTRAINT MEDALLERO_PAIS_cod_pais FOREIGN KEY (PAIS_cod_pais) REFERENCES PAIS(cod_pais),
+CONSTRAINT MEDALLERO_TIPO_MEDALLA_cod_tipo FOREIGN KEY (TIPO_MEDALLA_cod_tipo) REFERENCES TIPO_MEDALLA (cod_tipo)
+);
+
+create table DISCIPLINA (
+cod_disciplina serial primary key,
+nombre varchar (50) not null,
+descripcion varchar (150) null
+);
+
+create table ATLETA (
+cod_atleta serial primary key,
+nombre varchar (50) not null,
+apellido varchar (50) not null,
+edad integer not null,
+Participaciones varchar (100) not null,
+DISCIPLINA_cod_disciplina integer not null,
+PAIS_cod_pais integer not null,
+CONSTRAINT ATLETA_DISCIPLINA_cod_disciplina FOREIGN KEY (DISCIPLINA_cod_disciplina) REFERENCES DISCIPLINA(cod_disciplina),
+CONSTRAINT ATLETA_PAIS_cod_pais FOREIGN KEY (PAIS_cod_pais) REFERENCES PAIS(cod_pais)
+);
+
+
+create table CATEGORIA (
+cod_categoria serial primary key,
+categoria varchar (50) not null
+);
+
+create table TIPO_PARTICIPACION(
+cod_participacion serial primary key,
+tipo_participacion varchar (100) not null
+);
+
+create table EVENTO(
+cod_evento serial primary key,
+fecha date not null,
+ubicacion varchar (50) not null,
+hora date not null,
+DISCIPLINA_cod_disciplina integer not null,
+TIPO_PARTICIPACION_cod_participacion integer not null,
+CATEGORIA_cod_categoria integer not null,
+CONSTRAINT EVENTO_DISCIPLINA_cod_disciplina FOREIGN KEY (DISCIPLINA_cod_disciplina) REFERENCES DISCIPLINA (cod_disciplina),
+CONSTRAINT EVENTO_TIPO_PARTICIPACION_cod_participacion FOREIGN KEY (TIPO_PARTICIPACION_cod_participacion) REFERENCES TIPO_PARTICIPACION (cod_participacion),
+CONSTRAINT EVENTO_CATEGORIA_cod_categoria FOREIGN KEY (CATEGORIA_cod_categoria) REFERENCES CATEGORIA (cod_categoria)
+);
+
+create table EVENTO_ATLETA(
+ATLETA_cod_atleta integer not null,
+EVENTO_cod_evento integer not null,
+CONSTRAINT EVENTO_ATLETA_cod_atleta_cod_evento PRIMARY KEY (ATLETA_cod_atleta,EVENTO_cod_evento),
+CONSTRAINT EVENTO_ATLETA_ATLETA_cod_atleta FOREIGN KEY (ATLETA_cod_atleta) REFERENCES ATLETA (cod_atleta),
+CONSTRAINT EVENTO_ATLETA_EVENTO_cod_evento FOREIGN KEY (EVENTO_cod_evento) REFERENCES EVENTO(cod_evento)
+);
+
+create table TELEVISORA(
+cod_televisora serial primary key,
+nombre varchar (50) not null
+);
+
+create table COSTO_EVENTO (
+EVENTO_cod_evento integer not null,
+TELEVISORA_cod_televisora integer not null,
+Tarifa integer not null,
+CONSTRAINT COSTO_EVENTO_cod_evento_cod_televisora PRIMARY KEY (EVENTO_cod_evento,TELEVISORA_cod_televisora),
+CONSTRAINT COSTO_EVENTO_EVENTO_cod_evento FOREIGN KEY (EVENTO_cod_evento) REFERENCES EVENTO(cod_evento),
+CONSTRAINT COSTO_EVENTO_TELEVISORA_cod_televisora FOREIGN KEY (TELEVISORA_cod_televisora) REFERENCES TELEVISORA (cod_televisora)
+);
+
+select * from PROFESION     --1
+select * from PAIS --2
+select * from PUESTO--3
+select * from DEPARTAMENTO--4
+select * from MIEMBRO--5
+select * from PUESTO_MIEMBRO--6
+select * from TIPO_MEDALLA--7 
+select * from MEDALLERO--8
+select * from DISCIPLINA--9
+select * from ATLETA--10
+select * from CATEGORIA--11
+select * from TIPO_PARTICIPACION--12
+select * from EVENTO--13
+select * from EVENTO_ATLETA--14
+select * from TELEVISORA--15
+select * from COSTO_EVENTO--16
+
+--PLANTEAMIENTO 2
+
+ALTER TABLE EVENTO DROP COLUMN fecha -- se elimina el campo fecha
+ALTER TABLE EVENTO DROP COLUMN hora  -- se elimina el campo hora
+
+ALTER TABLE EVENTO ADD COLUMN fecha_hora timestamp not null -- se agrega el campo fecha_hora
+
+--PLANTEAMIENTO 3
+--Rango  24/7/2020 9:00:00  9/8/2020 20:00:00
+insert into EVENTO (ubicacion,disciplina_cod_disciplina,tipo_participacion_cod_participacion,categoria_cod_categoria,fecha_hora) VALUES ('',2,3,4,'2009-12-31 12:25:50') where fecha_hora BETWEEN  '24/7/2020 9:00:00' AND '9/8/2020 20:00:00'; 
+alter table EVENTO ADD CONSTRAINT EVENTO_fecha_hora check (fecha_hora  BETWEEN  '24/7/2020 9:00:00' and '9/8/2020 20:00:00');
+
+--PLANTEAMIENTO 4 
+create table SEDE (
+Codigo serial primary key,
+Sede varchar(50) not null
+);
+
+ALTER TABLE EVENTO ALTER COLUMN ubicacion TYPE int USING  ubicacion::integer
+ALTER TABLE EVENTO ADD CONSTRAINT EVENTO_ubicacion FOREIGN KEY (ubicacion) REFERENCES SEDE(Codigo)
+
+--PLANTEAMIENTO 5 ingresar 0 por defecto a la columna telefono si no se especifica
+
+ALTER TABLE MIEMBRO ALTER COLUMN telefono  SET DEFAULT '0';
+
+
+--PLANTEAMIENTO 6
+INSERT INTO PAIS(cod_pais,nombre)VALUES (1,'Guatemala'); 
+INSERT INTO PAIS(cod_pais,nombre)VALUES (2,'Francia'); 
+INSERT INTO PAIS(cod_pais,nombre)VALUES (3,'Argentina'); 
+INSERT INTO PAIS(cod_pais,nombre)VALUES (4,'Alemania'); 
+INSERT INTO PAIS(cod_pais,nombre)VALUES (5,'Italia'); 
+INSERT INTO PAIS(cod_pais,nombre)VALUES (6,'Brasil'); 
+INSERT INTO PAIS(cod_pais,nombre)VALUES (7,'Estados Unidos'); 
+
+
+
+INSERT INTO PROFESION(cod_prof,nombre)VALUES (1,'Medico'); 
+INSERT INTO PROFESION(cod_prof,nombre)VALUES (2,'Arquitecto'); 
+INSERT INTO PROFESION(cod_prof,nombre)VALUES (3,'Ingeniero'); 
+INSERT INTO PROFESION(cod_prof,nombre)VALUES (4,'Secretaria'); 
+INSERT INTO PROFESION(cod_prof,nombre)VALUES (5,'Auditor'); 
+
+
+INSERT INTO MIEMBRO (cod_miembro,nombre,apellido,edad,residencia,pais_cod_pais,profesion_cod_prof) 
+VALUES (1,'Scott','Mitchell',32,'1092 Highland Drive Manitowoc, WI 54220', 7,3);
+
+INSERT INTO MIEMBRO (nombre,apellido,edad,telefono,residencia,pais_cod_pais,profesion_cod_prof) 
+VALUES('Fanette','Poulin',25,25075853,'49 , boulevard Aristide Briand 76120 LE GRAND-QUEVILLY',2,4);
+
+INSERT INTO MIEMBRO (nombre,apellido,edad,residencia,pais_cod_pais,profesion_cod_prof)
+VALUES('Laura','Cunha Silva',55,'Rua Onze, 86 Uberaba-MG',6,5);
+
+INSERT INTO MIEMBRO (nombre,apellido,edad,telefono,residencia,pais_cod_pais,profesion_cod_prof)
+VALUES('Juan Jose','Lopez',38,36985247,'26 calle 4-10 zona 11',1,2);
+
+INSERT INTO MIEMBRO (nombre,apellido,edad,telefono,residencia,pais_cod_pais,profesion_cod_prof)
+VALUES('Arcangela','Panicucci',39,391664921,'Via Santa Teresa, 114 90010-Geraci Siculo PA',5,1);
+
+INSERT INTO MIEMBRO (nombre,apellido,edad,residencia,pais_cod_pais,profesion_cod_prof)
+VALUES('Jeuel','Villalpando',31,'Acuña de Figeroa 6106 80101 Playa Pascual',3,5);
+
+
+INSERT INTO DISCIPLINA (nombre,descripcion) 
+VALUES ('Atletismo','Saltos de longitud y triples, de altura y con pértigao garrocha; las 
+pruebas de lanzamiento de
+martillo, jabalina y disco.');
+
+INSERT INTO DISCIPLINA (nombre,descripcion) 
+VALUES ('Bádminton','');
+
+INSERT INTO DISCIPLINA (nombre,descripcion) 
+VALUES ('Ciclismo','');
+
+INSERT INTO DISCIPLINA (nombre,descripcion) 
+VALUES ('Judo','Es un arte marcial que se originó en Japón
+alrededor de 1880');
+
+INSERT INTO DISCIPLINA (nombre,descripcion) 
+VALUES ('Lucha','');
+
+INSERT INTO DISCIPLINA (nombre,descripcion) 
+VALUES ('Tenis de Mesa','');
+
+INSERT INTO DISCIPLINA (nombre,descripcion) 
+VALUES ('Boxeo','');
+
+INSERT INTO DISCIPLINA (nombre,descripcion) 
+VALUES ('Natación','Está presente como deporte en los Juegos desde
+la primera edición de la era moderna, en Atenas,
+Grecia, en 1896, donde se disputo en aguas
+abiertas.');
+
+INSERT INTO DISCIPLINA (nombre,descripcion) 
+VALUES ('Esgrima','');
+
+INSERT INTO DISCIPLINA (nombre,descripcion) 
+VALUES ('Vela','');
+
+
+INSERT INTO TIPO_MEDALLA (medalla) VALUES ('Oro');
+INSERT INTO TIPO_MEDALLA (medalla) VALUES ('Plata');
+INSERT INTO TIPO_MEDALLA (medalla) VALUES ('Bronce');
+INSERT INTO TIPO_MEDALLA (medalla) VALUES ('Platino');
+
+INSERT INTO CATEGORIA (categoria) VALUES ('Clasificatorio');
+INSERT INTO CATEGORIA (categoria) VALUES ('Eliminatorio');
+INSERT INTO CATEGORIA (categoria) VALUES ('Final');
+
+INSERT INTO TIPO_PARTICIPACION (tipo_participacion) VALUES ('Individual');
+INSERT INTO TIPO_PARTICIPACION (tipo_participacion) VALUES ('Parejas');
+INSERT INTO TIPO_PARTICIPACION (tipo_participacion) VALUES ('Equipo');
+
+INSERT INTO MEDALLERO (pais_cod_pais,cantidad_medallas,tipo_medalla_cod_tipo) VALUES (5,3,1);
+INSERT INTO MEDALLERO (pais_cod_pais,cantidad_medallas,tipo_medalla_cod_tipo) VALUES (2,5,1);
+INSERT INTO MEDALLERO (pais_cod_pais,cantidad_medallas,tipo_medalla_cod_tipo) VALUES (6,4,3);
+INSERT INTO MEDALLERO (pais_cod_pais,cantidad_medallas,tipo_medalla_cod_tipo) VALUES (4,3,4);
+INSERT INTO MEDALLERO (pais_cod_pais,cantidad_medallas,tipo_medalla_cod_tipo) VALUES (7,10,3);
+INSERT INTO MEDALLERO (pais_cod_pais,cantidad_medallas,tipo_medalla_cod_tipo) VALUES (3,8,2);
+INSERT INTO MEDALLERO (pais_cod_pais,cantidad_medallas,tipo_medalla_cod_tipo) VALUES (1,2,1);
+INSERT INTO MEDALLERO (pais_cod_pais,cantidad_medallas,tipo_medalla_cod_tipo) VALUES (1,5,4);
+INSERT INTO MEDALLERO (pais_cod_pais,cantidad_medallas,tipo_medalla_cod_tipo) VALUES (5,7,2);
+
+
+INSERT INTO SEDE (Sede) VALUES ('Gimnasio Metropolitano de Tokio');
+INSERT INTO SEDE (Sede) VALUES ('Jardín del Palacio Imperial de Tokio');
+INSERT INTO SEDE (Sede) VALUES ('Gimnasio Nacional Yoyogi');
+INSERT INTO SEDE (Sede) VALUES ('Nippon Budokan');
+INSERT INTO SEDE (Sede) VALUES ('Estadio Olímpico');
+
+select * from EVENTO
+
+INSERT INTO EVENTO (ubicacion,disciplina_cod_disciplina,tipo_participacion_cod_participacion,categoria_cod_categoria,fecha_hora)
+VALUES (3,2,2,1,'24/7/2020 11:00:00');
+
+INSERT INTO EVENTO (ubicacion,disciplina_cod_disciplina,tipo_participacion_cod_participacion,categoria_cod_categoria,fecha_hora)
+VALUES (1,6,1,3,'26/7/2020 10:30:00');
+
+INSERT INTO EVENTO (ubicacion,disciplina_cod_disciplina,tipo_participacion_cod_participacion,categoria_cod_categoria,fecha_hora)
+VALUES (5,7,1,2,'30/7/2020 18:45:00');
+
+-- no se puedei ngresar por el rango de fecha
+INSERT INTO EVENTO (ubicacion,disciplina_cod_disciplina,tipo_participacion_cod_participacion,categoria_cod_categoria,fecha_hora)
+VALUES (2,1,1,1,'01/7/2020 12:15:00');
+-- no se puedei ngresar por el rango de fecha
+INSERT INTO EVENTO (ubicacion,disciplina_cod_disciplina,tipo_participacion_cod_participacion,categoria_cod_categoria,fecha_hora)
+VALUES (4,10,3,1,'08/7/2020 19:35:00');
+
+--PLANTEAMIENTO 7
+ alter table PAIS drop constraint pais_nombre_key;
+ alter table TIPO_MEDALLA drop constraint tipo_medalla_medalla_key;
+ alter table DEPARTAMENTO drop constraint departamento_nombre_key;
+  
+--PLANTEAMIENTO 8
+
+alter table ATLETA drop constraint atleta_disciplina_cod_disciplina;
+
+create table Disciplina_Atleta(
+Cod_atleta integer not null,
+Cod_disciplina integer not null,
+CONSTRAINT Disciplina_Atleta_Cod_atleta_Cod_disciplina PRIMARY KEY (Cod_atleta,Cod_disciplina),
+CONSTRAINT Disciplina_Atleta_ATLETA_cod_atleta FOREIGN KEY (Cod_atleta) REFERENCES ATLETA (cod_atleta),
+CONSTRAINT Disciplina_Atleta_DISCIPLINA_cod_disciplina FOREIGN KEY (Cod_disciplina) REFERENCES  DISCIPLINA (cod_disciplina)
+);
+
+--PLANTEAMIENTO 9
+
+ALTER TABLE COSTO_EVENTO ALTER COLUMN tarifa SET DATA TYPE  numeric (10,2) 
+
+
+--PLANTEAMIENTO 10
+delete from TIPO_MEDALLA where cod_tipo= 4
+
+--PLANTEAMIENTO 11
+drop table TELEVISORA
+drop table COSTO_EVENTO
+
+
+--PLANTEAMIENTO 12
+delete from Disciplina
+
+--PLANTEAMIENTO 13
+
+ update MIEMBRO set telefono='55464601'  where nombre='Laura' AND apellido = 'Cunha Silva';
+ update MIEMBRO set telefono='91514243'  where nombre='Jeuel' AND apellido = 'Villalpando';
+ update MIEMBRO set telefono='920686670'  where nombre='Scott' AND apellido = 'Mitchell';
+
+ --PLANTEAMIENTO 14
+
+ALTER TABLE atleta ADD COLUMN Fotografía bytea null
+--este tipo de dato es el mas recomendado para guardar una imagen un nuestra base de datos.
+
+--PLANTEAMIENTO 15 
+ alter table ATLETA  add constraint ATLETA_edad check (edad < 25);
+
